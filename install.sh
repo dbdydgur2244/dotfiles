@@ -8,7 +8,7 @@
 #   git_email:    "dbdydgur2244@gmail.com"
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
-CONFIG_DIR="${BASH_SOURCE%/*}"
+CONFIG_DIR="$(dirname $(realpath $0))"
 if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 . "${CONFIG_DIR}/config.sh"
 
@@ -23,12 +23,12 @@ backup() {
 find_os() {
   local uname_out="$(uname -s)"
   local machine
-  case "${uname}" in
+  case "${uname_out}" in
     Linux*)     machine=Linux;;
     Darwin*)    machine=Mac;;
     *)          machine="UNKNOWN:${uname_out}"
   esac
-  return "$machine"
+  echo "$machine"
 }
 
 
@@ -37,10 +37,14 @@ ssh_config() {
   local ssh_config="${CONFIG_DIR}/config"
   # mkdir $HOME/.ssh 
   if [[ ! -d "$HOME/.ssh" ]]; then mkdir -p "$HOME/.ssh"; fi
+
   if [[ -f "$local_ssh_config" ]]; then
-    { seq 1 9; cat "${CONFIG_DIR}/config" } > $local_ssh_config
+    echo "backup the prezto profile to ~/.ssh/config to ~/.ssh/config_bac"
+    mv "$local_ssh_config" "${local_ssh_config}_bac"
+    # { seq 1 9; cat "${CONFIG_DIR}/config" } > "$local_ssh_config"
   else
-    ln -s "$ssh_config" "$local_ssh_config" 
+    ln -s "$ssh_config" "$local_ssh_config"
+
   fi
   chmod 440 "$local_ssh_config"
 }
@@ -63,26 +67,26 @@ install_fzf() {
 install_prezto_plugins() {
   cd $ZPREZTODIR
   git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
+  pwd
+  cd $CONFIG_DIR
 }
 
 install_prezto() {
-  zsh
+  # zsh
   git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
-  setopt EXTENDED_GLOB
-  for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
-    ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
-  done
   # if zshrc doesn't exist than just touch file
-  if [[ -f "$HOME/.zshrc" ]]; then touch "$HOME/.zshrc"; fi
-  sed -i -e "source ~/.zprezto/init.zsh" "$HOME/.zshrc"
+  echo 'source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"' >> "$HOME/.zshrc"
   # if already prezto profile exists, then backup pre-exist profile 
-  if [[ -f "$HOME/.zpreztorc" ]]; then 
-    echo "backup the prezto profile to ~/.zpreztorc_bac"
-    mv "$HOME/.zpreztorc" "$HOME/.zpreztorc_bac"
-  fi
+  local local_prezto_profile="$HOME/.zpreztorc"
+    
+  mv "$local_prezto_profile" "${local_prezto_profile}_bac"
+  # if [[ -e "${local_prezto_profile}" ]]; then
+    # echo "backup the prezto profile to ~/.zpreztorc_bac"
+    # mv "$local_prezto_profile" "${local_prezto_profile}_bac"
+  # fi
   # link our profile
   local prezto_profile="${CONFIG_DIR}/zpreztorc"
-  ln -s "$prezto_profile" "$HOME/.zpreztorc"
+  ln -s "$prezto_profile" "$local_prezto_profile"
 
   return 0
 }
@@ -92,7 +96,7 @@ install_zsh_packages() {
   # Install pure prompt
   if [[ -d "$HOME/.zsh" ]]; then mkdir -p "$HOME/.zsh"; fi
   install_prezto || (echo "install prezto failed. "; return 1)
-  install_prezto_plugins
+  # install_prezto_plugins
   return 0
 }
 
@@ -153,7 +157,8 @@ Commands:
 
 
 main() {
-  local machine=find_os
+  local machine=$(find_os)
+  echo $machine
   case $machine in
     Linux)
       linux_install_zsh || (echo "[!] install failed. "; return 1)
@@ -173,5 +178,6 @@ main() {
   return 0
 }
 
-main "$@" || exit 1
+main || exit 1
 exit 0
+
