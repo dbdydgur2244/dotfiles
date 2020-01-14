@@ -1,0 +1,24 @@
+prompt pure
+
+zstyle ':prezto:load' pmodule \
+'archive' \
+'alias-tips \
+'autosuggestions' \ 
+'completion' \
+'directory' \
+'environment' \
+'editor' \
+'history' \
+'history-substring-search' \
+'spectrum' \
+'prompt' \
+'syntax-highlighting' \
+'terminal' \
+'tmux-xpanes'
+
+zstyle ":prezto:module:alias-tips" text "Alias tip: "
+zstyle ":prezto:module:autosuggestions" color "yes"
+zstyle ":prezto:module:completion:*:hosts" etc-host-ignores \
+    '0.0.0.0' '127.0.0.1'
+zstyle ":prezto:module:editor" key-bindings "vi"
+zstyle ":prezto:module:editor" ps-context "yes"
