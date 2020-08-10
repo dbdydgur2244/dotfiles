@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CURRENT_DIR=`pwd -P`
-
+echo $CURRENT_DIR
 # 
 # Include config parameters from ./config.sh
 # This variables are global
@@ -131,9 +131,10 @@ install_brew() {
 
 install_vimrc() {
   if [[ $(command -v vim) == "" ]]; then return 1; fi
-  [ ! -f ~/.vimrc ] && \
-    ln -s $CURRENT_DIR/vim-settings/vimrc ~/.vimrc && \
-    vim -c ":PlugInstall" -c ":q" -c ":q"
+  
+  ln -sf $CURRENT_DIR/vim-settings ~/.vim
+  [ ! -f ~/.vimrc ] && ln -s $CURRENT_DIR/vim-settings/vimrc ~/.vimrc
+  vim -c ":PlugInstall" -c ":q" -c ":q"
 }
 
 
