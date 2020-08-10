@@ -19,6 +19,10 @@ if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 backup() {
   if [[ -d "$HOME/.zsh" ]]; then mv "$HOME/.zsh" "$HOME/.zsh_backup"; fi
   if [[ -f "$HOME/.zshrc" ]]; then mv "$HOME/.zshrc" "$HOME/.zshrc_backup"; fi
+  if [[ -f ~/.zpreztorc ]]; then mv "~/.zpreztorc" "~/.zpreztorc_backup"; fi
+  if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
+  if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
+  if [[ -f ~/.env ]]; then mv "~/.env" "~/.env_backup"; fi
 }
 
 
@@ -61,7 +65,9 @@ install_fzf() {
   git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
   $HOME/.fzf/install
   # fzf git plugin
-  source <(curl -Ss https://raw.githubusercontent.com/wfxr/forgit/master/forgit.plugin.zsh)
+  curl -Ss \
+      https://raw.githubusercontent.com/wfxr/forgit/master/forgit.plugin.zsh \
+      > ~/.forgit.plugin.zsh
 }
 
 # Installation prezto which is the configuration for Zsh
@@ -73,19 +79,9 @@ install_prezto_plugins() {
 }
 
 install_prezto() {
-  # zsh
+  zsh
   git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
   # if zshrc doesn't exist than just touch file
-
-  # if already prezto profile exists, then backup pre-exist profile 
-  mv "$local_prezto_profile" "${local_prezto_profile}_bac"
-  if [[ -f ~/.zpreztorc ]]; then
-    echo "backup the prezto profile to ~/.zpreztorc_bac"
-    mv "~/.zpreztorc" "~/.zpreztorc_bac"
-  fi
-  # link our profile
-  ln -s "$CURRENT_DIR/zpreztorc" ~/.zpreztorc
-  ln -s "$prezto_profile" "$local_prezto_profile"
 
   return 0
 }
@@ -123,6 +119,7 @@ linux_install_zsh() {
   return 0
 }
 
+
 install_brew() {
   if [[ $(command -v brew) == "" ]]; then
     echo "Cannot find brew" >&2
@@ -131,18 +128,22 @@ install_brew() {
   fi
 }
 
+
 install_vimrc() {
+  if [[ $(command -v vim) == "" ]]; then return 1; fi
   [ ! -f ~/.vimrc ] && \
     ln -s $CURRENT_DIR/vim-settings/vimrc ~/.vimrc && \
     vim -c ":PlugInstall" -c ":q" -c ":q"
 }
 
+
 install_tmux_packages() {
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
   git clone https://github.com/erikw/tmux-powerline.git ~/.tmux/plugins
 
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
   ~/.tmux/plugins/tpm/scripts/install_plugins.sh
 }
+
 
 install_tmux_conf() {
   if [[ $(command -v tmux) == "" ]]; then return 0; fi
@@ -152,19 +153,23 @@ install_tmux_conf() {
     install_tmux_packages
 }
 
+
 install_cargo() {
   curl https://sh.rustup.rs -sSf | sh
   export PATH="$HOME/.cargo/bin:$PATH"
 }
+
 
 install_exa() {
   if [[ $(command -v cargo) == "" ]]; then install_cargo; fi
   cargo install exa
 }
 
+
 install_mac_package() {
   brew install git git-lfs
 }
+
 
 mac_install_zsh() {
   backup
@@ -174,6 +179,19 @@ mac_install_zsh() {
   install_mac_package
 
   return 0
+}
+
+
+install_dotfiles() { 
+
+  # if already prezto profile exists, then backup pre-exist profile 
+  mv "$local_prezto_profile" "${local_prezto_profile}_bac"
+  if [[ -f ~/.zpreztorc ]]; then
+    echo "backup the prezto profile to ~/.zpreztorc_bac"
+    mv "~/.zpreztorc" "~/.zpreztorc_bac"
+  fi
+  # link our profile
+  ln -s "$CURRENT_DIR/zpreztorc" ~/.zpreztorc
 }
 
 
@@ -205,7 +223,9 @@ main() {
       ;;
   esac
 
-  chsh -s `which zsh`
+  # chsh -s `which zsh`
+  install_dotfiles
+
   install_zsh_packages
   install_fzf
   install_vimrc

@@ -1,4 +1,5 @@
 source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -f ~/.profile ] && source ~/.profile
+[ -f ~/.alias ] && source ~/.alias
+[ -f ~/.env ] && source ~/.env
