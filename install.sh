@@ -7,6 +7,7 @@
 #   git_email:    "dbdydgur2244@gmail.com"
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
+
 CONFIG_DIR="$HOME/.config"
 
 if [[ -f "${CONFIG_DIR}/config.sh" ]]; then source "${CONFIG_DIR}/config.sh"; fi
