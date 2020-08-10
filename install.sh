@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR="$(`pwd -P`)/dotfiles"
+CURRENT_DIR="$(dirname $(realpath $0))/dotfiles"
 echo $CURRENT_DIR
 # 
 # Include config parameters from ./config.sh
@@ -10,7 +10,7 @@ echo $CURRENT_DIR
 #   git_email:    "dbdydgur2244@gmail.com"
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
-CONFIG_DIR="$(dirname $(realpath $0))"
+CONFIG_DIR="$(dirname $(realpath $0))/dotfiles"
 if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 
 [ -f "${CONFIG_DIR}/config.sh" ] && source "${CONFIG_DIR}/config.sh"
