@@ -8,7 +8,6 @@
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
 CONFIG_DIR="~/.config"
-if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 
 if [[ -f "${CONFIG_DIR}/config.sh" ]]; then source "${CONFIG_DIR}/config.sh"; fi
 
@@ -38,17 +37,14 @@ find_os() {
 
 
 ssh_config() {
-  local local_ssh_config="$HOME/.ssh/config"
-  local ssh_config="${CONFIG_DIR}/config"
   # mkdir $HOME/.ssh 
   if [[ ! -d "$HOME/.ssh" ]]; then mkdir -p "$HOME/.ssh"; fi
 
-  if [[ -f "$local_ssh_config" ]]; then
-    echo "backup the prezto profile to ~/.ssh/config to ~/.ssh/config_bac"
-    mv "$local_ssh_config" "${local_ssh_config}_bac"
-    # { seq 1 9; cat "${CONFIG_DIR}/config" } > "$local_ssh_config"
+  if [[ -f ~/.ssh/config ]]; then
+    echo "backup the prezto profile to ~/.ssh/config to ~/.ssh/.config"
+    mv ~/.ssh/config ~/.ssh/.config
   else
-    [ -f "$local_ssh_config" ] && ln -s "$ssh_config" "$local_ssh_config"
+    if [[ -f "${CONFIG_DIR}/config" ]]; then ln -s "${CONFIG_DIR}/config"; fi
   fi
   chmod 440 "$local_ssh_config"
 }
@@ -71,10 +67,9 @@ install_fzf() {
 
 # Installation prezto which is the configuration for Zsh
 install_prezto_plugins() {
-  cd $ZPREZTODIR
+  [ -z "$ZPREZTODIR" ] && cd $ZPREZTODIR || cd ~/.zprezto
+
   git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
-  pwd
-  cd $CONFIG_DIR
 }
 
 install_prezto() {
@@ -89,7 +84,8 @@ install_zsh_packages() {
   # Install pure prompt
   if [[ -d "$HOME/.zsh" ]]; then mkdir -p "$HOME/.zsh"; fi
   install_prezto || (echo "install prezto failed. "; return 1)
-  # install_prezto_plugins
+
+  install_prezto_plugins
   return 0
 }
 
