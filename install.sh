@@ -139,6 +139,9 @@ install_vimrc() {
 
 install_tmux_packages() {
   git clone https://github.com/erikw/tmux-powerline.git ~/.tmux/plugins
+
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  ~/.tmux/plugins/tpm/scripts/install_plugins.sh
 }
 
 install_tmux_conf() {
