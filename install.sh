@@ -22,6 +22,8 @@ backup() {
   if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
   if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
   if [[ -f ~/.env ]]; then mv "~/.env" "~/.env_backup"; fi
+  if [[ -d ~/.vim ]]; then mv "~/.vim" "~/.vim_backup"; fi
+  if [[ -f ~/.vimrc ]]; then mv "~/.vimrc" "~/.vimrc_backup"; fi
 }
 
 
@@ -68,7 +70,8 @@ install_fzf() {
 
 # Installation prezto which is the configuration for Zsh
 install_prezto_plugins() {
-  [ -z "$ZPREZTODIR" ] && cd $ZPREZTODIR || cd ~/.zprezto
+  [[ -z "${ZPREZTODIR}" ]] && echo $ZPREZTODIR & cd $ZPREZTODIR || \
+      cd "${ZDOTDIR:-$HOME}/.zprezto"
 
   git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
 }
@@ -125,8 +128,8 @@ install_brew() {
 install_vimrc() {
   if [[ $(command -v vim) == "" ]]; then return 1; fi
   
-  ln -sf $CURRENT_DIR/vim-settings ~/.vim
-  [ ! -f ~/.vimrc ] && ln -s $CURRENT_DIR/vim-settings/vimrc ~/.vimrc
+  [ ! -d ~/.vim ] && ln -sf $CONFIG_DIR/vim-settings ~/.vim
+  [ ! -f ~/.vimrc ] && ln -s $CONFIG_DIR/vim-settings/vimrc ~/.vimrc
   vim -c ":PlugInstall" -c ":q" -c ":q"
 }
 
@@ -143,7 +146,6 @@ install_tmux_conf() {
   if [[ $(command -v tmux) == "" ]]; then return 0; fi
 
   [ ! -f ~/.tmux.conf ] && \
-    ln -s $CURRENT_DIR/tmux.conf ~/.tmux.conf && \
     install_tmux_packages
 }
 
