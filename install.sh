@@ -152,6 +152,16 @@ install_tmux_conf() {
     install_tmux_packages
 }
 
+install_cargo() {
+  curl https://sh.rustup.rs -sSf | sh
+  export PATH="$HOME/.cargo/bin:$PATH"
+}
+
+install_exa() {
+  if [[ $(command -v cargo) == "" ]]; then install_cargo; fi
+  cargo install exa
+}
+
 install_mac_package() {
   brew install git git-lfs
 }
@@ -200,6 +210,7 @@ main() {
   install_fzf
   install_vimrc
   install_tmux_conf
+  install_exa
 
   return 0
 }
