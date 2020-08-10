@@ -13,12 +13,14 @@ echo $CURRENT_DIR
 CONFIG_DIR="$(dirname $(realpath $0))/dotfiles"
 if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 
-[ -f "${CONFIG_DIR}/config.sh" ] && source "${CONFIG_DIR}/config.sh"
+if [[ -f "${CONFIG_DIR}/config.sh" ]]; then source "${CONFIG_DIR}/config.sh"; fi
 
 # backup previous zsh configuration files
 backup() {
-  if [[ -d "$HOME/.zsh" ]]; then mv "$HOME/.zsh" "$HOME/.zsh_backup"; fi
-  if [[ -f "$HOME/.zshrc" ]]; then mv "$HOME/.zshrc" "$HOME/.zshrc_backup"; fi
+  echo "backup .zsh directory and .zshrc .zpreztorc .tmux.conf" \
+       ".alias .env if exists"
+  if [[ -d ~/.zsh ]]; then mv ~/.zsh ~/.zsh_backup; fi
+  if [[ -f ~/.zshrc ]]; then mv ~/.zshrc ~/.zshrc_backup; fi
   if [[ -f ~/.zpreztorc ]]; then mv "~/.zpreztorc" "~/.zpreztorc_backup"; fi
   if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
   if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
@@ -81,7 +83,6 @@ install_prezto_plugins() {
 install_prezto() {
   zsh
   git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
-  # if zshrc doesn't exist than just touch file
 
   return 0
 }
@@ -105,8 +106,6 @@ ubuntu_install_zsh() {
 }
 
 linux_install_zsh() {
-  backup
-  
   case "`/usr/bin/lsb_release -si`" in
     Ubuntu)
       ubuntu_install_zsh || return 1
@@ -173,8 +172,6 @@ install_mac_package() {
 
 
 mac_install_zsh() {
-  backup
-
   xcode-select --install
   install_brew
   install_mac_package
@@ -184,15 +181,14 @@ mac_install_zsh() {
 
 
 install_dotfiles() { 
-
-  # if already prezto profile exists, then backup pre-exist profile 
-  mv "$local_prezto_profile" "${local_prezto_profile}_bac"
-  if [[ -f ~/.zpreztorc ]]; then
-    echo "backup the prezto profile to ~/.zpreztorc_bac"
-    mv "~/.zpreztorc" "~/.zpreztorc_bac"
-  fi
+  backup
   # link our profile
-  ln -s "$CURRENT_DIR/zpreztorc" ~/.zpreztorc
+  cd $CURRENT_DIR
+  ln -s zshrc ~/.zshrc
+  ln -s zpreztorc ~/.zpreztorc
+  ln -s tmux.conf ~/.tmux.conf
+  ln -s alias ~/.alias
+  ln -s env ~/.env
 }
 
 
@@ -207,7 +203,7 @@ Commands:
 
 main() {
   git clone --recursive https://github.com/dbdydgur2244/dotfiles
-  cd dot-files
+  cd dotfiles
 
   local machine=$(find_os)
   echo $machine
