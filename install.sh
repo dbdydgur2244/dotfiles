@@ -128,8 +128,8 @@ install_brew() {
 install_vimrc() {
   if [[ $(command -v vim) == "" ]]; then return 1; fi
   
-  [ ! -d ~/.vim ] && ln -sf $CONFIG_DIR/vim-settings ~/.vim
-  [ ! -f ~/.vimrc ] && ln -s $CONFIG_DIR/vim-settings/vimrc ~/.vimrc
+  [ ! -d ~/.vim ] && ln -sf $CONFIG_DIR/vim-setting ~/.vim
+  [ ! -f ~/.vimrc ] && ln -s $CONFIG_DIR/vim-setting/vimrc ~/.vimrc
   vim -c ":PlugInstall" -c ":q" -c ":q"
 }
 
