@@ -1,0 +1,3 @@
+[submodule "vim-setting"]
+	path = vim-setting
+	url = https://github.com/dbdydgur2244/vim-setting

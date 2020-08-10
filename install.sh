@@ -1,17 +1,19 @@
 #!/bin/bash
 
+CURRENT_DIR=`pwd -P`
+
 # 
 # Include config parameters from ./config.sh
 # This variables are global
 # 
-# example)
+# Example)
 #   git_email:    "dbdydgur2244@gmail.com"
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
 CONFIG_DIR="$(dirname $(realpath $0))"
 if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
-. "${CONFIG_DIR}/config.sh"
 
+[ -f "${CONFIG_DIR}/config.sh" ] && source "${CONFIG_DIR}/config.sh"
 
 # backup previous zsh configuration files
 backup() {
@@ -43,8 +45,7 @@ ssh_config() {
     mv "$local_ssh_config" "${local_ssh_config}_bac"
     # { seq 1 9; cat "${CONFIG_DIR}/config" } > "$local_ssh_config"
   else
-    ln -s "$ssh_config" "$local_ssh_config"
-
+    [ -f "$local_ssh_config" ] && ln -s "$ssh_config" "$local_ssh_config"
   fi
   chmod 440 "$local_ssh_config"
 }
@@ -75,17 +76,15 @@ install_prezto() {
   # zsh
   git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
   # if zshrc doesn't exist than just touch file
-  echo 'source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"' >> "$HOME/.zshrc"
+
   # if already prezto profile exists, then backup pre-exist profile 
-  local local_prezto_profile="$HOME/.zpreztorc"
-    
   mv "$local_prezto_profile" "${local_prezto_profile}_bac"
-  # if [[ -e "${local_prezto_profile}" ]]; then
-    # echo "backup the prezto profile to ~/.zpreztorc_bac"
-    # mv "$local_prezto_profile" "${local_prezto_profile}_bac"
-  # fi
+  if [[ -f ~/.zpreztorc ]]; then
+    echo "backup the prezto profile to ~/.zpreztorc_bac"
+    mv "~/.zpreztorc" "~/.zpreztorc_bac"
+  fi
   # link our profile
-  local prezto_profile="${CONFIG_DIR}/zpreztorc"
+  ln -s "$CURRENT_DIR/zpreztorc" ~/.zpreztorc
   ln -s "$prezto_profile" "$local_prezto_profile"
 
   return 0
@@ -132,6 +131,24 @@ install_brew() {
   fi
 }
 
+install_vimrc() {
+  [ ! -f ~/.vimrc ] && \
+    ln -s $CURRENT_DIR/vim-settings/vimrc ~/.vimrc && \
+    vim -c ":PlugInstall" -c ":q" -c ":q"
+}
+
+install_tmux_packages() {
+  git clone https://github.com/erikw/tmux-powerline.git ~/.tmux/plugins
+}
+
+install_tmux_conf() {
+  if [[ $(command -v tmux) == "" ]]; then return 0; fi
+
+  [ ! -f ~/.tmux.conf ] && \
+    ln -s $CURRENT_DIR/tmux.conf ~/.tmux.conf && \
+    install_tmux_packages
+}
+
 install_mac_package() {
   brew install git git-lfs
 }
@@ -157,6 +174,9 @@ Commands:
 
 
 main() {
+  git clone --recursive https://github.com/dbdydgur2244/dot-files
+  cd dot-files
+
   local machine=$(find_os)
   echo $machine
   case $machine in
@@ -168,13 +188,16 @@ main() {
       ;;
     *)
       show_usage
-      return 1
+      return 
       ;;
   esac
 
   chsh -s `which zsh`
   install_zsh_packages
   install_fzf
+  install_vimrc
+  install_tmux_conf
+
   return 0
 }
 

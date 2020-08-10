@@ -1,0 +1,6 @@
+alias ls='exa'
+
+alias ..='cd ..'
+alias ...='cd ../../'
+alias ....='cd ../../..'
+
