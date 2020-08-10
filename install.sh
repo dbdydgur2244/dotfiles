@@ -206,7 +206,7 @@ Commands:
 
 
 main() {
-  git clone --recursive https://github.com/dbdydgur2244/dot-files
+  git clone --recursive https://github.com/dbdydgur2244/dotfiles
   cd dot-files
 
   local machine=$(find_os)
