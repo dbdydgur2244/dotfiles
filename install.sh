@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR=`pwd -P`
+CURRENT_DIR=`pwd -P`/dotfiles
 echo $CURRENT_DIR
 # 
 # Include config parameters from ./config.sh
