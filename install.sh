@@ -72,7 +72,7 @@ install_fzf() {
 install_prezto_plugins() {
   [[ -z "${ZPREZTODIR}" ]] && echo $ZPREZTODIR & cd $ZPREZTODIR || \
       cd "${ZDOTDIR:-$HOME}/.zprezto"
-
+  pwd 
   git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
 }
 
@@ -179,12 +179,11 @@ mac_install_zsh() {
 install_dotfiles() { 
   backup
   # link our profile
-  cd $CONFIG_DIR
-  ln -s zshrc ~/.zshrc
-  ln -s zpreztorc ~/.zpreztorc
-  ln -s tmux.conf ~/.tmux.conf
-  ln -s alias ~/.alias
-  ln -s env ~/.env
+  ln -s ${CONFIG_DIR}/zshrc ~/.zshrc
+  ln -s ${CONFIG_DIR}/zpreztorc ~/.zpreztorc
+  ln -s ${CONFIG_DIR}/tmux.conf ~/.tmux.conf
+  ln -s ${CONFIG_DIR}/alias ~/.alias
+  ln -s ${CONFIG_DIR}/env ~/.env
 }
 
 
