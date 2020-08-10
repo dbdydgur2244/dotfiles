@@ -1,8 +1,5 @@
 #!/bin/bash
 
-CURRENT_DIR="$(dirname $(realpath $0))/dotfiles"
-echo $CURRENT_DIR
-# 
 # Include config parameters from ./config.sh
 # This variables are global
 # 
@@ -10,7 +7,7 @@ echo $CURRENT_DIR
 #   git_email:    "dbdydgur2244@gmail.com"
 #   git_username: "dbdydgur2244"
 #   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
-CONFIG_DIR="$(dirname $(realpath $0))/dotfiles"
+CONFIG_DIR="~/.config"
 if [[ ! -d "$CONFIG_DIR" ]]; then CONFIG_DIR="$PWD"; fi
 
 if [[ -f "${CONFIG_DIR}/config.sh" ]]; then source "${CONFIG_DIR}/config.sh"; fi
@@ -183,7 +180,7 @@ mac_install_zsh() {
 install_dotfiles() { 
   backup
   # link our profile
-  cd $CURRENT_DIR
+  cd $CONFIG_DIR
   ln -s zshrc ~/.zshrc
   ln -s zpreztorc ~/.zpreztorc
   ln -s tmux.conf ~/.tmux.conf
@@ -202,8 +199,9 @@ Commands:
 
 
 main() {
-  git clone --recursive https://github.com/dbdydgur2244/dotfiles
-  cd dotfiles
+  cd ~/
+  git clone --recursive https://github.com/dbdydgur2244/dotfiles $CONFIG_DIR
+  cd $CONFIG_DIR
 
   local machine=$(find_os)
   echo $machine
