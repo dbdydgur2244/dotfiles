@@ -155,7 +155,7 @@ install_tmux_conf() {
 
 
 install_cargo() {
-  curl https://sh.rustup.rs -sSf | sh
+  curl https://sh.rustup.rs -sSf | sh -s -- -q -y
   export PATH="$HOME/.cargo/bin:$PATH"
 }
 
