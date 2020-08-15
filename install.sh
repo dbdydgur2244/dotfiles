@@ -1,63 +1,96 @@
 #!/bin/bash
 
-# Include config parameters from ./config.sh
-# This variables are global
-# 
-# Example)
-#   git_email:    "dbdydgur2244@gmail.com"
-#   git_username: "dbdydgur2244"
-#   public_key:   ".ssh/id_rsa.pub" // must be $HOME/.ssh
+set -u
+
 
 CONFIG_DIR="$HOME/.config"
+zsh=1
+vim=1
+tmux=1
+exa=1
+fzf=1
 
-if [[ -f "${CONFIG_DIR}/config.sh" ]]; then source "${CONFIG_DIR}/config.sh"; fi
 
-# backup previous zsh configuration files
-backup() {
-  echo "backup .zsh directory and .zshrc .zpreztorc .tmux.conf" \
-       ".alias .env if exists"
-  if [[ -d ~/.zsh ]]; then mv ~/.zsh ~/.zsh_backup; fi
-  if [[ -f ~/.zshrc ]]; then mv ~/.zshrc ~/.zshrc_backup; fi
-  if [[ -f ~/.zpreztorc ]]; then mv "~/.zpreztorc" "~/.zpreztorc_backup"; fi
-  if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
-  if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
-  if [[ -f ~/.env ]]; then mv "~/.env" "~/.env_backup"; fi
-  if [[ -d ~/.vim ]]; then mv "~/.vim" "~/.vim_backup"; fi
-  if [[ -f ~/.vimrc ]]; then mv "~/.vimrc" "~/.vimrc_backup"; fi
+show_usage() {
+  cat << EOF
+usage: $0 [OPTIONS]
+    --help               Show this message
+    --all                Install [(zshrc, zprezto), fzf, vim, exa, tmux.conf]
+
+    --[no-]zsh           Whether install zshrc and zprezto
+    --[no-]vim           Whether install vim configuration
+    --[no-]tmux          Whether install tmux configuration
+    --[no-]exa           Whether install exa and alias ls to exa
+    --[no-]fzf           Whether install fzf and fzf configuration
+EOF
 }
 
 
-find_os() {
-  local uname_out="$(uname -s)"
-  local machine
-  case "${uname_out}" in
-    Linux*)     machine=Linux;;
-    Darwin*)    machine=Mac;;
-    *)          machine="UNKNOWN:${uname_out}"
+for opt in "$@"; do
+  case $opt in
+    --help)
+      show_usage
+      exit 0
+      ;;
+    --all)
+      zsh=1
+      vim=1
+      tmux=1
+      exa=1
+      fzf=1
+      ;;
+    --zsh) zsh=1;;
+    --no-zsh) zsh=0;;
+    --vim) vim=1;;
+    --no-vim) vim=0;;
+    --tmux) tmux=1;;
+    --no-tmux) tmux=0;;
+    --exa) exa=1;;
+    --no-exa) exa=0;;
+    --fzf) fzf=1;;
+    --no-fzf) fzf=0;;
+    *)
+      echo "unknown option: $opt"
+      help
+      exit 1
+      ;;
   esac
-  echo "$machine"
+done
+
+
+# Installation prezto which is the configuration for Zsh
+install_prezto_plugins() {
+  [[ -z "${ZPREZTODIR}" ]] && cd $ZPREZTODIR || cd "${ZDOTDIR:-$HOME}/.zprezto"
+  git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
 }
 
+install_prezto() {
+  if [[ -f ~/.zpreztorc ]]; then mv "~/.zpreztorc" "~/.zpreztorc_backup"; fi
+  if [[ -d ~/.zprezto ]]; then mv "~/.zprezto" "~/.zprezto_backup"; fi
 
-ssh_config() {
-  # mkdir $HOME/.ssh 
-  if [[ ! -d "$HOME/.ssh" ]]; then mkdir -p "$HOME/.ssh"; fi
+  zsh
+  git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
-  if [[ -f ~/.ssh/config ]]; then
-    echo "backup the prezto profile to ~/.ssh/config to ~/.ssh/.config"
-    mv ~/.ssh/config ~/.ssh/.config
+  install_prezto_plugins
+  return 0
+}
+
+# Installation zsh package include prezto
+install_zsh_packages() {
+ 
+  if [[ -d "$HOME/.zsh" ]]; then 
+    mkdir -p "$HOME/.zsh"
   else
-    if [[ -f "${CONFIG_DIR}/config" ]]; then ln -s "${CONFIG_DIR}/config"; fi
+    mv ~/.zsh ~/.zsh_backup
+    if [[ -f ~/.zshrc ]]; then mv ~/.zshrc ~/.zshrc_backup; fi
   fi
-  chmod 440 "$local_ssh_config"
+  install_prezto || (echo "install prezto failed. "; return 1)
+
+  ln -s ${CONFIG_DIR}/zshrc ~/.zshrc
+  ln -s ${CONFIG_DIR}/zpreztorc ~/.zpreztorc
+
+  return 0
 }
-
-
-git_config() {
-  git config --global user.name "$git_username"
-  git config --global user.email "$git_email"
-}
-
 
 install_fzf() {
   git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
@@ -68,68 +101,18 @@ install_fzf() {
       > ~/.forgit.plugin.zsh
 }
 
-# Installation prezto which is the configuration for Zsh
-install_prezto_plugins() {
-  [[ -z "${ZPREZTODIR}" ]] && echo $ZPREZTODIR & cd $ZPREZTODIR || \
-      cd "${ZDOTDIR:-$HOME}/.zprezto"
-  pwd 
-  git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
-}
-
-install_prezto() {
-  zsh
-  git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
-
-  return 0
-}
-
-# Installation zsh package include prezto
-install_zsh_packages() {
-  # Install pure prompt
-  if [[ -d "$HOME/.zsh" ]]; then mkdir -p "$HOME/.zsh"; fi
-  install_prezto || (echo "install prezto failed. "; return 1)
-
-  install_prezto_plugins
-  return 0
-}
-
-
-# installation zsh in ubuntu
-ubuntu_install_zsh() {
-    if [[ $(command -v zsh) == "" ]]; then
-        sudo apt install zsh
-    fi
-    return 0
-}
-
-linux_install_zsh() {
-  case "`/usr/bin/lsb_release -si`" in
-    Ubuntu)
-      ubuntu_install_zsh || return 1
-      ;;
-    *)
-      echo "In current, only support Ubuntu" 
-      return 1
-      ;;
-  esac
-  return 0
-}
-
-
-install_brew() {
-  if [[ $(command -v brew) == "" ]]; then
-    echo "Cannot find brew" >&2
-    echo "Installing Homebrew"
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  fi
-}
-
-
 install_vimrc() {
-  if [[ $(command -v vim) == "" ]]; then return 1; fi
+  if [[ $(command -v vim) == "" ]]; then
+    echo "vim doesn't exist. please install vim"
+    return 1
+  fi
+
+  if [[ -d ~/.vim ]]; then mv "~/.vim" "~/.vim_backup"; fi
+  if [[ -f ~/.vimrc ]]; then mv "~/.vimrc" "~/.vimrc_backup"; fi
   
-  [ ! -d ~/.vim ] && ln -sf $CONFIG_DIR/vim-setting ~/.vim
-  [ ! -f ~/.vimrc ] && ln -s $CONFIG_DIR/vim-setting/vimrc ~/.vimrc
+  ln -sf $CONFIG_DIR/vim-setting ~/.vim
+  ln -s $CONFIG_DIR/vim-setting/vimrc ~/.vimrc
+
   vim -c ":PlugInstall" -c ":q" -c ":q"
 }
 
@@ -143,10 +126,15 @@ install_tmux_packages() {
 
 
 install_tmux_conf() {
-  if [[ $(command -v tmux) == "" ]]; then return 0; fi
+  if [[ $(command -v tmux) == "" ]]; then 
+    echo "tmux doesn't exist. please install tmux"
+    return 1
+  fi
 
-  [ ! -f ~/.tmux.conf ] && \
-    install_tmux_packages
+  if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
+  ln -s ${CONFIG_DIR}/tmux.conf ~/.tmux.conf
+
+  install_tmux_packages
 }
 
 
@@ -158,42 +146,19 @@ install_cargo() {
 
 install_exa() {
   if [[ $(command -v cargo) == "" ]]; then install_cargo; fi
-  cargo install exa
-}
-
-
-install_mac_package() {
-  brew install git git-lfs
-}
-
-
-mac_install_zsh() {
-  xcode-select --install
-  install_brew
-  install_mac_package
-
-  return 0
+  cargo install exa || return 1
 }
 
 
 install_dotfiles() { 
-  backup
-  # link our profile
-  ln -s ${CONFIG_DIR}/zshrc ~/.zshrc
-  ln -s ${CONFIG_DIR}/zpreztorc ~/.zpreztorc
-  ln -s ${CONFIG_DIR}/tmux.conf ~/.tmux.conf
+  if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
+  if [[ -f ~/.env ]]; then mv "~/.env" "~/.env_backup"; fi
+ 
   ln -s ${CONFIG_DIR}/alias ~/.alias
   ln -s ${CONFIG_DIR}/env ~/.env
 }
 
 
-show_usage() {
-  echo "Usage: install [COMMAND]
-Commands:
-  install   : install zsh and zsh configuration files in the home directory
-  uninstall : uninstall zsh configuraiton files
-  "
-}
 
 
 main() {
@@ -201,30 +166,19 @@ main() {
   git clone --recursive https://github.com/dbdydgur2244/dotfiles $CONFIG_DIR
   cd $CONFIG_DIR
 
-  local machine=$(find_os)
-  echo $machine
-  case $machine in
-    Linux)
-      linux_install_zsh || (echo "[!] install failed. "; return 1)
-      ;;
-    Mac)
-      mac_install_zsh  || (echo "[!] install failed. "; return 1)
-      ;;
-    *)
-      show_usage
-      return 
-      ;;
-  esac
+  if [ $zsh -eq 1 ]; then
+    if [[ $(command -v zsh) == "" ]]; then 
+      echo "zsh doesn't exist. please install zsh"
+      return 1
+    fi
+    install_zsh_packages || return 1
+  fi 
 
-  # chsh -s `which zsh`
+  if [[ $fzf -eq 1 ]]; then install_fzf || return 1; fi
+  if [[ $vim -eq 1 ]]; then install_vimrc || return 1; fi
+  if [[ $tmux -eq 1 ]]; then install_tmux_conf || return 1; fi
+  if [[ $exa -eq 1 ]]; then install_exa || return 1; fi
   install_dotfiles
-
-  install_zsh_packages
-  install_fzf
-  install_vimrc
-  install_tmux_conf
-  install_exa
-
   return 0
 }
 
