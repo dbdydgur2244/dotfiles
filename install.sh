@@ -60,7 +60,10 @@ done
 
 # Installation prezto which is the configuration for Zsh
 install_prezto_plugins() {
-  [[ -z "${ZPREZTODIR}" ]] && cd $ZPREZTODIR || cd "${ZDOTDIR:-$HOME}/.zprezto"
+  case ${ZPREZTODIR:-*} in
+    --*) cd $ZPREZTODIR ;;
+    *) cd "${ZDOTDIR:-$HOME}/.zprezto" ;;
+  esac
   git clone --recurse-submodules https://github.com/belak/prezto-contrib contrib
 }
 
