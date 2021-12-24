@@ -68,10 +68,9 @@ install_prezto_plugins() {
 }
 
 install_prezto() {
-  if [[ -f ~/.zpreztorc ]]; then mv "~/.zpreztorc" "~/.zpreztorc_backup"; fi
-  if [[ -d ~/.zprezto ]]; then mv "~/.zprezto" "~/.zprezto_backup"; fi
+  if [[ -f ~/.zpreztorc ]]; then mv ~/.zpreztorc ~/.zpreztorc_backup; fi
+  if [[ -d ~/.zprezto ]]; then mv ~/.zprezto ~/.zprezto_backup; fi
 
-  zsh
   git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
   install_prezto_plugins
@@ -81,16 +80,16 @@ install_prezto() {
 # Installation zsh package include prezto
 install_zsh_packages() {
  
-  if [[ -d "$HOME/.zsh" ]]; then 
-    mkdir -p "$HOME/.zsh"
+  if [[ ! -d ~/.zsh ]]; then 
+    mkdir -p ~/.zsh
   else
     mv ~/.zsh ~/.zsh_backup
     if [[ -f ~/.zshrc ]]; then mv ~/.zshrc ~/.zshrc_backup; fi
   fi
   install_prezto || (echo "install prezto failed. "; return 1)
 
-  ln -s ${CONFIG_DIR}/zshrc ~/.zshrc
-  ln -s ${CONFIG_DIR}/zpreztorc ~/.zpreztorc
+  ln -s ${CONFIG_DIR}/dotfiles/zshrc ~/.zshrc
+  ln -s ${CONFIG_DIR}/dotfiles/zpreztorc ~/.zpreztorc
 
   return 0
 }
@@ -110,11 +109,11 @@ install_vimrc() {
     return 1
   fi
 
-  if [[ -d ~/.vim ]]; then mv "~/.vim" "~/.vim_backup"; fi
-  if [[ -f ~/.vimrc ]]; then mv "~/.vimrc" "~/.vimrc_backup"; fi
+  if [[ -d ~/.vim ]]; then mv ~/.vim ~/.vim_backup; fi
+  if [[ -f ~/.vimrc ]]; then mv ~/.vimrc ~/.vimrc_backup; fi
   
-  ln -sf $CONFIG_DIR/vim-setting ~/.vim
-  ln -s $CONFIG_DIR/vim-setting/vimrc ~/.vimrc
+  ln -sf $CONFIG_DIR/dotfiles/vim-setting ~/.vim
+  ln -s $CONFIG_DIR/dotfiles/vim-setting/vimrc ~/.vimrc
 
   vim -c ":PlugInstall" -c ":q" -c ":q"
 }
@@ -134,8 +133,8 @@ install_tmux_conf() {
     return 1
   fi
 
-  if [[ -f ~/.tmux.conf ]]; then mv "~/.tmux.conf" "~/.tmux.conf_backup"; fi
-  ln -s ${CONFIG_DIR}/tmux.conf ~/.tmux.conf
+  if [[ -f ~/.tmux.conf ]]; then mv ~/.tmux.conf ~/.tmux.conf_backup; fi
+  ln -s ${CONFIG_DIR}/dotfiles/tmux.conf ~/.tmux.conf
 
   install_tmux_packages
 }
@@ -154,20 +153,18 @@ install_exa() {
 
 
 install_dotfiles() { 
-  if [[ -f ~/.alias ]]; then mv "~/.alias" "~/.alias_backup"; fi
-  if [[ -f ~/.env ]]; then mv "~/.env" "~/.env_backup"; fi
+  if [[ -f ~/.alias ]]; then mv ~/.alias ~/.alias_backup; fi
+  if [[ -f ~/.env ]]; then mv ~/.env ~/.env_backup; fi
  
-  ln -s ${CONFIG_DIR}/alias ~/.alias
-  ln -s ${CONFIG_DIR}/env ~/.env
+  ln -s ${CONFIG_DIR}/dotfiles/alias ~/.alias
+  ln -s ${CONFIG_DIR}/dotfiles/env ~/.env
 }
 
 
 
 
 main() {
-  cd ~/
-  git clone --recursive https://github.com/dbdydgur2244/dotfiles $CONFIG_DIR
-  cd $CONFIG_DIR
+  git clone --recursive https://github.com/dbdydgur2244/dotfiles $CONFIG_DIR/dotfiles
 
   if [ $zsh -eq 1 ]; then
     if [[ $(command -v zsh) == "" ]]; then 
@@ -187,4 +184,3 @@ main() {
 
 main || exit 1
 exit 0
-
